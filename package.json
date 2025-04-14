@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node --watch app.js",
+    "dev": "node --watch app.js",
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,7 +12,7 @@
   "license": "MIT",
   "description": "Curso Express.js",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^5.1.0"
-  },
-  "devDependencies": {}
+  }
 }
