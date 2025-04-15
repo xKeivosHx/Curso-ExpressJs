@@ -3,6 +3,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const usersFilePath = path.join(__dirname, "users.json");
+const { validateUser, validateUserUpdate } = require("./utils/validations");
 
 const app = express();
 
@@ -81,17 +82,6 @@ app.get("/users", (req, res) => {
 app.post("/users", (req, res) => {
   const newUser = req.body;
 
-  if (!newUser.name || newUser.name.length < 3) {
-    return res
-      .status(400)
-      .json({ error: "The name must be at least 3 characters long" });
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!newUser.email || !emailRegex.test(newUser.email)) {
-    return res.status(400).json({ error: "El email no es válido" });
-  }
-
   fs.readFile(usersFilePath, "utf-8", (err, data) => {
     if (err) {
       return res.status(500).json({
@@ -99,7 +89,14 @@ app.post("/users", (req, res) => {
       });
     }
 
-    const users = JSON.parse(data);
+    let users = JSON.parse(data);
+
+    const validate = validateUser(newUser, users);
+    if (!validate.isValid) {
+      return res.status(400).json({
+        error: validate.errors,
+      });
+    }
 
     users.push(newUser);
 
@@ -111,6 +108,40 @@ app.post("/users", (req, res) => {
       }
 
       res.status(201).json(newUser);
+    });
+  });
+});
+
+app.put("/users/:id", (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const updateUser = req.body;
+
+  fs.readFile(usersFilePath, "utf8", (error, data) => {
+    if (error) {
+      return res.status(500).json({ error: "Error data connection" });
+    }
+
+    let users = JSON.parse(data);
+
+    const validate = validateUserUpdate(updateUser, users);
+    if (!validate.isValid) {
+      return res.status(400).json({
+        error: validate.errors,
+      });
+    }
+
+    users = users.map((user) => {
+      return user.id === userId ? { ...user, ...updateUser } : user;
+    });
+
+    fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Error al actualizar el usuario" });
+      }
+
+      res.json(updateUser);
     });
   });
 });

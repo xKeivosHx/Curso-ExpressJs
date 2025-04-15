@@ -11,12 +11,7 @@
   },
   {
     "id": 3,
-    "name": "Nuevo Usuario",
-    "email": "nuevo@ejemplo.com"
-  },
-  {
-    "id": 3,
-    "name": "Nuevo Usuario",
+    "name": "hola mundo",
     "email": "nuevo@ejemplo.com"
   }
 ]
