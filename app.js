@@ -78,6 +78,43 @@ app.get("/users", (req, res) => {
   });
 });
 
+app.post("/users", (req, res) => {
+  const newUser = req.body;
+
+  if (!newUser.name || newUser.name.length < 3) {
+    return res
+      .status(400)
+      .json({ error: "The name must be at least 3 characters long" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!newUser.email || !emailRegex.test(newUser.email)) {
+    return res.status(400).json({ error: "El email no es válido" });
+  }
+
+  fs.readFile(usersFilePath, "utf-8", (err, data) => {
+    if (err) {
+      return res.status(500).json({
+        error: "The connection data failed.",
+      });
+    }
+
+    const users = JSON.parse(data);
+
+    users.push(newUser);
+
+    fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), (err) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Error saving user",
+        });
+      }
+
+      res.status(201).json(newUser);
+    });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server http://localhost:${PORT}`);
 });
