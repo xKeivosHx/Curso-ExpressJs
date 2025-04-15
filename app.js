@@ -1,7 +1,11 @@
 require("dotenv").config();
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const usersFilePath = path.join(__dirname, "users.json");
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -58,6 +62,19 @@ app.post("/data", (req, res) => {
   res.status(200).json({
     message: "JSON Data received",
     data,
+  });
+});
+
+app.get("/users", (req, res) => {
+  fs.readFile(usersFilePath, "utf8", (error, data) => {
+    if (error) {
+      return res.status(500).json({
+        error: "Error data connection",
+      });
+    }
+
+    const users = JSON.parse(data);
+    res.json(users);
   });
 });
 
