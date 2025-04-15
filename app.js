@@ -27,10 +27,38 @@ app.get("/search", (req, res) => {
   const category = req.query.category || "Todas";
 
   res.send(`
-        <h2>Resultados de la Busqueda</h2>
+        <h2>Resultados de la Búsqueda</h2>
         <p>Término: ${terms}</p>
         <p>Categoría: ${category}</p>
     `);
+});
+
+app.post("/form", (req, res) => {
+  const name = req.body.name || "Anonymous";
+  const email = req.body.email || "Not provided";
+
+  res.status(200).json({
+    message: "JSON Data",
+    data: {
+      name,
+      email,
+    },
+  });
+});
+
+app.post("/data", (req, res) => {
+  const data = req.body;
+
+  if (!data || Object.keys(data).length === 0) {
+    return res.status(400).json({
+      error: "No data provided",
+    });
+  }
+
+  res.status(200).json({
+    message: "JSON Data received",
+    data,
+  });
 });
 
 app.listen(PORT, () => {
