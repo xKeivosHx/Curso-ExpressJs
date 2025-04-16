@@ -1,14 +1,18 @@
 require("dotenv").config();
 const express = require("express");
+
+const LoggerMiddleware = require("./middlewares/logger");
+const { validateUser, validateUserUpdate } = require("./utils/validations");
+
 const fs = require("fs");
 const path = require("path");
 const usersFilePath = path.join(__dirname, "users.json");
-const { validateUser, validateUserUpdate } = require("./utils/validations");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(LoggerMiddleware);
 
 const PORT = process.env.PORT || 3000;
 
