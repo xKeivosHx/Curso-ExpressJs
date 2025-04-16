@@ -34,10 +34,10 @@ function validateUser(user, users) {
   };
 }
 
-function validateUserUpdate(user, users) {
+function validateUserUpdate(userId, user, users) {
   const errors = [];
 
-  if (isValidId(user.id, users)) {
+  if (isValidId(userId, users)) {
     errors.push("The ID must be numeric and exist");
   }
 
