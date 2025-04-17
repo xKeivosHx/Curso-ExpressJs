@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 const LoggerMiddleware = require("./middlewares/logger");
 const errorHandler = require("./middlewares/errorHandler");
@@ -173,8 +175,31 @@ app.delete("/users/:id", (req, res) => {
   });
 });
 
-app.get("/error", (req, res, next) => {
-  next(new Error("Intentional error."));
+app.get("/db/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Error DB connection." });
+  }
+});
+
+app.post("/db/create", async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+      },
+    });
+
+    console.log(newUser);
+    res.status(201).json(newUser);
+  } catch (error) {
+    next(new Error(error));
+  }
 });
 
 app.listen(PORT, () => {

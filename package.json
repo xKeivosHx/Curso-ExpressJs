@@ -12,7 +12,12 @@
   "license": "MIT",
   "description": "Curso Express.js",
   "dependencies": {
+    "@prisma/client": "^6.6.0",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.6.0"
   }
 }
