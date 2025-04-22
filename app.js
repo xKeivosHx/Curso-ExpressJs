@@ -2,10 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const LoggerMiddleware = require("./middlewares/logger");
-const errorHandler = require("./middlewares/errorHandler");
-const { validateUser, validateUserUpdate } = require("./utils/validations");
+const LoggerMiddleware = require("./src/middlewares/logger");
+const errorHandler = require("./src/middlewares/errorHandler");
+const { validateUser, validateUserUpdate } = require("./src/utils/validations");
+const authenticateToken = require("./src/middlewares/auth");
 
 const fs = require("fs");
 const path = require("path");
@@ -24,7 +27,6 @@ app.get("/", (req, res) => {
   res.send(`
     <h1>Express JS</h1>
     <p>This is an node.js app with express.js</p>
-    <p>Running on PORT ${PORT}</p>
     `);
 });
 
@@ -186,12 +188,14 @@ app.get("/db/users", async (req, res) => {
 
 app.post("/db/create", async (req, res, next) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, password, role } = req.body;
 
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
+        password,
+        role,
       },
     });
 
@@ -200,6 +204,85 @@ app.post("/db/create", async (req, res, next) => {
   } catch (error) {
     next(new Error(error));
   }
+});
+
+app.get("/db/delete/:id", async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const userExists = await prisma.user.findUnique({
+      where: { id: id },
+    });
+
+    if (!userExists) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const user = await prisma.user.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    console.log(user);
+    res.status(200).json({
+      message: "User deleted.",
+    });
+  } catch (error) {
+    next(new Error(error));
+  }
+});
+
+app.post("/register", async (req, res) => {
+  const { email, password, name } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      name,
+      role: "USER",
+    },
+  });
+
+  return res.status(201).json({
+    message: "User created successfully",
+    user,
+  });
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    return res.status(401).json({
+      error: "Invalid email or password",
+    });
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+
+  if (!isValidPassword) {
+    return res.status(401).json({
+      error: "Invalid email or password",
+    });
+  }
+
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
+
+  return res.status(200).json({
+    message: "Login successful",
+    token,
+  });
 });
 
 app.listen(PORT, () => {
