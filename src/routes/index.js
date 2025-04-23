@@ -1,11 +1,10 @@
 const { Router } = require("express");
 const authRouter = require("./auth.router");
+const adminRouter = require("./admin.router");
 
-function routerApi(app) {
-  const router = Router();
+const router = Router();
 
-  router.use("/auth", authRouter);
-  app.use("/api", router);
-}
+router.use("/auth", authRouter);
+router.use("/admin", adminRouter);
 
-module.exports = routerApi;
+module.exports = router;
