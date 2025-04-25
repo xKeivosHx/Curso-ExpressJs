@@ -1,11 +1,11 @@
-const express = require("express");
+const { Router } = require("express");
 const {
   createTimeBlock,
   listReservations,
 } = require("../controllers/admin.controller");
 const authenticateToken = require("../middlewares/auth");
 
-const router = express.Router();
+const router = Router();
 
 router.post("/time-blocks", authenticateToken, createTimeBlock);
 
